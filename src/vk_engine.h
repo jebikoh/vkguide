@@ -28,4 +28,16 @@ public:
 
 	//run main loop
 	void run();
+
+	VkInstance _instance;                      // Vulkan API instance
+	VkDebugUtilsMessengerEXT _debug_messenger; // Debug messenger
+	VkPhysicalDevice _chosenGPU;		   // GPU
+	VkDevice _device;			   // Logical device
+	VkSurfaceKHR _surface;			   // Window
+
+private:
+	void init_vulkan();
+	void init_swapchain();
+	void init_commands();
+	void init_sync_structures();
 };

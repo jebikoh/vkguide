@@ -7,10 +7,14 @@
 #include <vk_initializers.h>
 #include <vk_types.h>
 
+#include "VkBootstrap.h"
+
 #include <chrono>
 #include <thread>
 
 VulkanEngine* loadedEngine = nullptr;
+
+constexpr bool bUseValidationLayers = false;
 
 VulkanEngine& VulkanEngine::Get() { return *loadedEngine; }
 void VulkanEngine::init()
@@ -32,9 +36,40 @@ void VulkanEngine::init()
         _windowExtent.height,
         window_flags);
 
+    init_vulkan();
+
+    init_swapchain();
+
+    init_commands();
+
+    init_sync_structures();
+
     // everything went fine
     _isInitialized = true;
 }
+
+void VulkanEngine::init_vulkan() {
+    vkb::InstanceBuilder builder;
+
+    auto inst_ret = builder.set_app_name("Vulkan Application")
+        .request_validation_layers(bUseValidationLayers)
+        .use_default_debug_messenger()
+        .require_api_version(1, 3, 0)
+        .build();
+
+    vkb::Instance vkb_inst = inst_ret.value();
+
+    _instance = vkb_inst.instance;
+    _debug_messenger = vkb_inst.debug_messenger;
+
+    SDL_Vulkan_CreateSurface()
+}
+
+void VulkanEngine::init_swapchain() {  }
+
+void VulkanEngine::init_commands() {  }
+
+void VulkanEngine::init_sync_structures() {  }
 
 void VulkanEngine::cleanup()
 {
