@@ -5,6 +5,13 @@
 
 #include <vk_types.h>
 
+struct FrameData {
+    VkCommandPool _commandPool;
+    VkCommandBuffer _mainCommandBuffer;
+};
+
+constexpr unsigned int FRAME_OVERLAP = 2;// 2 -> Double Buffering
+
 class VulkanEngine {
 public:
     bool _isInitialized{false};
@@ -28,6 +35,8 @@ public:
     //run main loop
     void run();
 
+    FrameData &get_current_frame() { return _frames[_frameNumber % FRAME_OVERLAP]; };
+
     VkInstance _instance;                     // Vulkan API instance
     VkDebugUtilsMessengerEXT _debug_messenger;// Debug messenger
     VkPhysicalDevice _chosenGPU;              // GPU
@@ -41,6 +50,11 @@ public:
     std::vector<VkImage> _swapchainImages;        // Handle to actual image object
     std::vector<VkImageView> _swapchainImageViews;// Wrapper to perform actions on the image
     VkExtent2D _swapchainExtent;
+
+    // Frames
+    FrameData _frames[FRAME_OVERLAP];
+    VkQueue _graphicsQueue;
+    uint32_t _graphicsQueueFamily;
 
 private:
     void init_vulkan();
