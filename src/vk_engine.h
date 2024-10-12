@@ -8,6 +8,8 @@
 struct FrameData {
     VkCommandPool _commandPool;
     VkCommandBuffer _mainCommandBuffer;
+    VkSemaphore _swapchainSemaphore, _renderSemaphore;// GPU - GPU Sync
+    VkFence _renderFence;                             // CPU - GPU Sync
 };
 
 constexpr unsigned int FRAME_OVERLAP = 2;// 2 -> Double Buffering
