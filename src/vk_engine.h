@@ -3,13 +3,31 @@
 
 #pragma once
 
+#include <vk_descriptors.h>
 #include <vk_types.h>
+
+struct DeletionQueue {
+    std::deque<std::function<void()>> deletors;
+
+    void push_function(std::function<void()> &&function) {
+        deletors.push_back(function);
+    }
+
+    void flush() {
+        for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
+            (*it)();
+        }
+
+        deletors.clear();
+    }
+};
 
 struct FrameData {
     VkCommandPool _commandPool;
     VkCommandBuffer _mainCommandBuffer;
     VkSemaphore _swapchainSemaphore, _renderSemaphore;// GPU - GPU Sync
     VkFence _renderFence;                             // CPU - GPU Sync
+    DeletionQueue _delQueue;
 };
 
 constexpr unsigned int FRAME_OVERLAP = 2;// 2 -> Double Buffering
@@ -57,13 +75,32 @@ public:
     FrameData _frames[FRAME_OVERLAP];
     VkQueue _graphicsQueue;
     uint32_t _graphicsQueueFamily;
+    DeletionQueue _mainDelQueue;
+
+    AllocatedImage _drawImage;
+    VkExtent2D _drawExtent;
+
+    VmaAllocator _allocator;
+
+    // Descriptors
+    DescriptorAllocator globalDescriptorAllocator;
+    VkDescriptorSet _drawImageDescriptors;
+    VkDescriptorSetLayout _drawImageDescriptorLayout;
+
+    // Pipelines
+    VkPipeline _gradientPipeline;
+    VkPipelineLayout _gradientPipelineLayout;
 
 private:
     void init_vulkan();
     void init_swapchain();
     void init_commands();
     void init_sync_structures();
+    void init_descriptors();
+    void init_pipelines();
+    void init_background_pipelines();
 
     void create_swapchain(uint32_t width, uint32_t height);
     void destroy_swapchain();
+    void draw_background(VkCommandBuffer cmd);
 };
