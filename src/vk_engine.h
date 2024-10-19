@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "vk_loader.h"
 #include <vk_descriptors.h>
 #include <vk_types.h>
 
@@ -129,6 +130,7 @@ public:
     VkPipelineLayout _meshPipelineLayout;
     VkPipeline _meshPipeline;
     GPUMeshBuffers rectangle;
+    std::vector<std::shared_ptr<MeshAsset>> testMeshes;
 
 private:
     void init_vulkan();

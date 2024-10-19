@@ -1,6 +1,8 @@
 ﻿//> includes
 #include "vk_engine.h"
 
+#include <glm/gtx/transform.hpp>
+
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
@@ -283,6 +285,20 @@ void VulkanEngine::draw_geometry(VkCommandBuffer cmd) {
     vkCmdBindIndexBuffer(cmd, rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
     vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
+
+    glm::mat4 view = glm::translate(glm::vec3{0, 0, -5});
+    glm::mat4 proj = glm::perspective(glm::radians(70.0f), (float) _drawExtent.width / (float) _drawExtent.height,
+                                      10000.0f, 0.1f);
+    proj[1][1] *= -1;
+
+    push_constants.worldMatrix  = proj * view;
+    push_constants.vertexBuffer = testMeshes[2]->meshBuffers.vertexBufferAddress;
+    vkCmdPushConstants(cmd, _meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants),
+                       &push_constants);
+
+    vkCmdBindIndexBuffer(cmd, testMeshes[2]->meshBuffers.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(cmd, testMeshes[2]->surfaces[0].count, 1, testMeshes[2]->surfaces[0].startIndex, 0, 0);
+
     vkCmdEndRendering(cmd);
 }
 
@@ -793,5 +809,7 @@ void VulkanEngine::init_default_data() {
         destroy_buffer(rectangle.indexBuffer);
         destroy_buffer(rectangle.vertexBuffer);
     });
+
+    testMeshes = loadGltfMeshes(this, "..\\assets\\basicmesh.glb").value();
 }
 #pragma endregion Initialization
