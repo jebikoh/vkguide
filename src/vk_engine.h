@@ -51,6 +51,7 @@ public:
     int _frameNumber{0};
     bool stop_rendering{false};
     VkExtent2D _windowExtent{1700, 900};
+    bool resize_requested = false;
 
     struct SDL_Window *_window{nullptr};
 
@@ -102,6 +103,7 @@ public:
     AllocatedImage _drawImage;
     AllocatedImage _depthImage;
     VkExtent2D _drawExtent;
+    float renderScale = 1.0f;
 
     VmaAllocator _allocator;
 
@@ -139,6 +141,8 @@ private:
     void init_background_pipeline();
     void init_mesh_pipeline();
     void init_default_data();
+
+    void resize_swapchain();
 
     void create_swapchain(uint32_t width, uint32_t height);
     void destroy_swapchain();
