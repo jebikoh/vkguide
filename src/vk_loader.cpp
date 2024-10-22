@@ -98,6 +98,12 @@ std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadGltfMeshes(VulkanEngi
 
             newMesh.surfaces.push_back(newSurface);
         }
+
+        constexpr bool OVERRIDE_COLORS = true;
+        if (OVERRIDE_COLORS) {
+            for (Vertex &vtx: vertices) vtx.color = glm::vec4(vtx.normal, 1.0f);
+        }
+
         newMesh.meshBuffers = engine->upload_mesh(indices, vertices);
         meshes.emplace_back(std::make_shared<MeshAsset>(std::move(newMesh)));
     }

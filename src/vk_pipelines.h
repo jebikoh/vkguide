@@ -57,5 +57,7 @@ namespace vkutil {
         void set_depth_format(VkFormat format) { _renderInfo.depthAttachmentFormat = format; }
 
         void disable_depthtest();
+        
+        void enable_depthtest(bool depthWriteEnable, VkCompareOp op);
     };
 };// namespace vkutil

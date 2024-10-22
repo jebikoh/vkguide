@@ -100,6 +100,7 @@ public:
     DeletionQueue _mainDelQueue;
 
     AllocatedImage _drawImage;
+    AllocatedImage _depthImage;
     VkExtent2D _drawExtent;
 
     VmaAllocator _allocator;
@@ -122,14 +123,9 @@ public:
     std::vector<ComputeEffect> backgroundEffects;
     int currentBackgroundEffect{0};
 
-    // Triangle
-    VkPipelineLayout _trianglePipelineLayout;
-    VkPipeline _trianglePipeline;
-
     // Meshes!
     VkPipelineLayout _meshPipelineLayout;
     VkPipeline _meshPipeline;
-    GPUMeshBuffers rectangle;
     std::vector<std::shared_ptr<MeshAsset>> testMeshes;
 
 private:
@@ -141,7 +137,6 @@ private:
     void init_pipelines();
     void init_imgui();
     void init_background_pipeline();
-    void init_triangle_pipeline();
     void init_mesh_pipeline();
     void init_default_data();
 
