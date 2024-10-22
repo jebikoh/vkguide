@@ -258,7 +258,7 @@ void VulkanEngine::draw_background(VkCommandBuffer cmd) {
 
 void VulkanEngine::draw_geometry(VkCommandBuffer cmd) {
     VkRenderingAttachmentInfo colorAttachment =
-            vkinit::attachment_info(_drawImage.imageView, nullptr, VK_IMAGE_LAYOUT_GENERAL);
+            vkinit::attachment_info(_drawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     VkRenderingAttachmentInfo depthAttachment =
             vkinit::depth_attachment_info(_depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
     VkRenderingInfo renderInfo = vkinit::rendering_info(_drawExtent, &colorAttachment, &depthAttachment);
@@ -633,16 +633,16 @@ void VulkanEngine::init_imgui() {
 void VulkanEngine::init_mesh_pipeline() {
     VkShaderModule triangleFragShader;
     if (!vkutil::load_shader_module("../shaders/colored_triangle.frag.spv", _device, &triangleFragShader)) {
-        fmt::println("Error when building the triangle fragment shader module");
+        fmt::println("[Mesh] Error when building the triangle fragment shader module");
     } else {
-        fmt::println("Triangle fragment shader successfully loaded");
+        fmt::println("[Mesh] Triangle fragment shader successfully loaded");
     }
 
     VkShaderModule triangleVertexShader;
     if (!vkutil::load_shader_module("../shaders/colored_triangle_mesh.vert.spv", _device, &triangleVertexShader)) {
-        fmt::println("Error when building the triangle vertex shader module");
+        fmt::println("[Mesh] Error when building the triangle vertex shader module");
     } else {
-        fmt::println("Triangle vertex shader successfully loaded");
+        fmt::println("[Mesh] Triangle vertex shader successfully loaded");
     }
 
     VkPushConstantRange bufferRange{};
@@ -664,7 +664,7 @@ void VulkanEngine::init_mesh_pipeline() {
     pplBuilder.set_polygon_mode(VK_POLYGON_MODE_FILL);
     pplBuilder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
     pplBuilder.set_multisampling_none();
-    pplBuilder.disable_blending();
+    pplBuilder.enable_blending_additive();
     pplBuilder.enable_depthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
     pplBuilder.set_color_attachment_format(_drawImage.imageFormat);
     pplBuilder.set_depth_format(_depthImage.imageFormat);

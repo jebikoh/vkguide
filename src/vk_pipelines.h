@@ -48,6 +48,10 @@ namespace vkutil {
             _colorBlendAttachment.blendEnable = VK_FALSE;
         }
 
+        void enable_blending_additive();
+
+        void enable_blending_alphablend();
+
         void set_color_attachment_format(VkFormat format) {
             _colorAttachmentformat              = format;
             _renderInfo.colorAttachmentCount    = 1;
@@ -57,7 +61,7 @@ namespace vkutil {
         void set_depth_format(VkFormat format) { _renderInfo.depthAttachmentFormat = format; }
 
         void disable_depthtest();
-        
+
         void enable_depthtest(bool depthWriteEnable, VkCompareOp op);
     };
 };// namespace vkutil
