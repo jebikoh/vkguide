@@ -21,13 +21,13 @@
 #include <glm/vec4.hpp>
 
 
-#define VK_CHECK(x)                                                                                                    \
-    do {                                                                                                               \
-        VkResult err = x;                                                                                              \
-        if (err) {                                                                                                     \
-            fmt::println("Detected Vulkan error: {}", string_VkResult(err));                                           \
-            abort();                                                                                                   \
-        }                                                                                                              \
+#define VK_CHECK(x)                                                            \
+    do {                                                                       \
+        VkResult err = x;                                                      \
+        if (err) {                                                             \
+            fmt::println("Detected Vulkan error: {}", string_VkResult(err));   \
+            abort();                                                           \
+        }                                                                      \
     } while (0)
 
 struct AllocatedImage {
@@ -61,4 +61,13 @@ struct GPUMeshBuffers {
 struct GPUDrawPushConstants {
     glm::mat4 worldMatrix;
     VkDeviceAddress vertexBuffer;
+};
+
+struct GPUSceneData {
+    glm::mat4 view;
+    glm::mat4 proj;
+    glm::mat4 viewProj;
+    glm::vec4 ambientColor;
+    glm::vec4 sunlightDirection;
+    glm::vec4 sunlightColor;
 };

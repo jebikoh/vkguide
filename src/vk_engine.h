@@ -10,10 +10,14 @@
 struct DeletionQueue {
     std::deque<std::function<void()>> deletors;
 
-    void push_function(std::function<void()> &&function) { deletors.push_back(function); }
+    void push_function(std::function<void()> &&function) {
+        deletors.push_back(function);
+    }
 
     void flush() {
-        for (auto it = deletors.rbegin(); it != deletors.rend(); it++) { (*it)(); }
+        for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
+            (*it)();
+        }
 
         deletors.clear();
     }
@@ -25,6 +29,7 @@ struct FrameData {
     VkSemaphore _swapchainSemaphore, _renderSemaphore;// GPU - GPU Sync
     VkFence _renderFence;                             // CPU - GPU Sync
     DeletionQueue _delQueue;
+    DescriptorAllocatorGrowable _frameDescriptors;
 };
 
 struct ComputePushConstants {
@@ -72,13 +77,19 @@ public:
     void immediate_submit(std::function<void(VkCommandBuffer cmd)> &&function);
 
     // Buffers
-    AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
-    void destroy_buffer(const AllocatedBuffer &buf) { vmaDestroyBuffer(_allocator, buf.buffer, buf.allocation); }
+    AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage,
+                                  VmaMemoryUsage memoryUsage);
+    void destroy_buffer(const AllocatedBuffer &buf) {
+        vmaDestroyBuffer(_allocator, buf.buffer, buf.allocation);
+    }
 
     // Mesh!
-    GPUMeshBuffers upload_mesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
+    GPUMeshBuffers upload_mesh(std::span<uint32_t> indices,
+                               std::span<Vertex> vertices);
 
-    FrameData &get_current_frame() { return _frames[_frameNumber % FRAME_OVERLAP]; };
+    FrameData &get_current_frame() {
+        return _frames[_frameNumber % FRAME_OVERLAP];
+    };
 
     VkInstance _instance;                     // Vulkan API instance
     VkDebugUtilsMessengerEXT _debug_messenger;// Debug messenger
@@ -90,8 +101,9 @@ public:
     VkSwapchainKHR _swapchain;
     VkFormat _swapchainImageFormat;
 
-    std::vector<VkImage> _swapchainImages;        // Handle to actual image object
-    std::vector<VkImageView> _swapchainImageViews;// Wrapper to perform actions on the image
+    std::vector<VkImage> _swapchainImages;// Handle to actual image object
+    std::vector<VkImageView>
+            _swapchainImageViews;// Wrapper to perform actions on the image
     VkExtent2D _swapchainExtent;
 
     // Frames
@@ -129,6 +141,10 @@ public:
     VkPipelineLayout _meshPipelineLayout;
     VkPipeline _meshPipeline;
     std::vector<std::shared_ptr<MeshAsset>> testMeshes;
+
+    // Scene
+    GPUSceneData sceneData;
+    VkDescriptorSetLayout _gpuSceneDataDescriptorLayout;
 
 private:
     void init_vulkan();
