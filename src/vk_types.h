@@ -21,13 +21,13 @@
 #include <glm/vec4.hpp>
 
 
-#define VK_CHECK(x)                                                            \
-    do {                                                                       \
-        VkResult err = x;                                                      \
-        if (err) {                                                             \
-            fmt::println("Detected Vulkan error: {}", string_VkResult(err));   \
-            abort();                                                           \
-        }                                                                      \
+#define VK_CHECK(x)                                                                                                    \
+    do {                                                                                                               \
+        VkResult err = x;                                                                                              \
+        if (err) {                                                                                                     \
+            fmt::println("Detected Vulkan error: {}", string_VkResult(err));                                           \
+            abort();                                                                                                   \
+        }                                                                                                              \
     } while (0)
 
 struct AllocatedImage {
@@ -70,4 +70,17 @@ struct GPUSceneData {
     glm::vec4 ambientColor;
     glm::vec4 sunlightDirection;
     glm::vec4 sunlightColor;
+};
+
+enum class MaterialPass : uint8_t { MainColor, Transparent, Other };
+
+struct MaterialPipeline {
+    VkPipeline pipeline;
+    VkPipelineLayout layout;
+};
+
+struct MaterialInstance {
+    MaterialPipeline *pipeline;
+    VkDescriptorSet materialSet;
+    MaterialPass passType;
 };

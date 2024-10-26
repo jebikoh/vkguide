@@ -10,14 +10,10 @@
 struct DeletionQueue {
     std::deque<std::function<void()>> deletors;
 
-    void push_function(std::function<void()> &&function) {
-        deletors.push_back(function);
-    }
+    void push_function(std::function<void()> &&function) { deletors.push_back(function); }
 
     void flush() {
-        for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
-            (*it)();
-        }
+        for (auto it = deletors.rbegin(); it != deletors.rend(); it++) { (*it)(); }
 
         deletors.clear();
     }
@@ -50,6 +46,36 @@ struct ComputeEffect {
 
 constexpr unsigned int FRAME_OVERLAP = 2;// 2 -> Double Buffering
 
+struct GLTFMetallic_Roughness {
+    MaterialPipeline opaquePipeline;
+    MaterialPipeline transparentPipeline;
+
+    VkDescriptorSetLayout materialLayout;
+
+    struct MaterialConstants {
+        glm::vec4 colorFactors;
+        glm::vec4 metal_rough_factors;
+        glm::vec4 extra[14];
+    };
+
+    struct MaterialResources {
+        AllocatedImage colorImage;
+        VkSampler colorSampler;
+        AllocatedImage metalRoughImage;
+        VkSampler metalRoughSampler;
+        VkBuffer dataBuffer;
+        uint32_t dataBufferOffset;
+    };
+
+    DescriptorWriter writer;
+
+    void build_pipelines(VulkanEngine *engine);
+    void clear_resources(VkDevice device);
+
+    MaterialInstance write_material(VkDevice device, MaterialPass pass, const MaterialResources &resources,
+                                    DescriptorAllocatorGrowable &descriptorAllocator);
+};
+
 class VulkanEngine {
 public:
     bool _isInitialized{false};
@@ -77,19 +103,20 @@ public:
     void immediate_submit(std::function<void(VkCommandBuffer cmd)> &&function);
 
     // Buffers
-    AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage,
-                                  VmaMemoryUsage memoryUsage);
-    void destroy_buffer(const AllocatedBuffer &buf) {
-        vmaDestroyBuffer(_allocator, buf.buffer, buf.allocation);
-    }
+    AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+    void destroy_buffer(const AllocatedBuffer &buf) { vmaDestroyBuffer(_allocator, buf.buffer, buf.allocation); }
 
     // Mesh!
-    GPUMeshBuffers upload_mesh(std::span<uint32_t> indices,
-                               std::span<Vertex> vertices);
+    GPUMeshBuffers upload_mesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
-    FrameData &get_current_frame() {
-        return _frames[_frameNumber % FRAME_OVERLAP];
-    };
+    FrameData &get_current_frame() { return _frames[_frameNumber % FRAME_OVERLAP]; };
+
+    AllocatedImage create_image(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
+
+    AllocatedImage create_image(void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage,
+                                bool mipmapped = false);
+
+    void destroy_image(const AllocatedImage &img);
 
     VkInstance _instance;                     // Vulkan API instance
     VkDebugUtilsMessengerEXT _debug_messenger;// Debug messenger
@@ -101,9 +128,8 @@ public:
     VkSwapchainKHR _swapchain;
     VkFormat _swapchainImageFormat;
 
-    std::vector<VkImage> _swapchainImages;// Handle to actual image object
-    std::vector<VkImageView>
-            _swapchainImageViews;// Wrapper to perform actions on the image
+    std::vector<VkImage> _swapchainImages;        // Handle to actual image object
+    std::vector<VkImageView> _swapchainImageViews;// Wrapper to perform actions on the image
     VkExtent2D _swapchainExtent;
 
     // Frames
@@ -120,7 +146,7 @@ public:
     VmaAllocator _allocator;
 
     // Descriptors
-    DescriptorAllocator globalDescriptorAllocator;
+    DescriptorAllocatorGrowable globalDescriptorAllocator;
     VkDescriptorSet _drawImageDescriptors;
     VkDescriptorSetLayout _drawImageDescriptorLayout;
 
@@ -145,6 +171,21 @@ public:
     // Scene
     GPUSceneData sceneData;
     VkDescriptorSetLayout _gpuSceneDataDescriptorLayout;
+
+    // Textures
+    AllocatedImage _whiteImage;
+    AllocatedImage _blackImage;
+    AllocatedImage _greyImage;
+    AllocatedImage _errorCheckerboardImage;
+
+    VkSampler _defaultSamplerLinear;
+    VkSampler _defaultSamplerNearest;
+
+    VkDescriptorSetLayout _singleImageDescriptorLayout;
+
+    // Materials
+    MaterialInstance defaultData;
+    GLTFMetallic_Roughness metalRoughMaterial;
 
 private:
     void init_vulkan();
